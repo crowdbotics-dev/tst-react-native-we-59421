@@ -4,6 +4,14 @@ FROM crowdbotics/cb-django:3.8-slim-buster AS build
 COPY ./Pipfile ./Pipfile.lock /
 RUN PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy
 
+FROM node:14.5.0-alpine AS rn_web_build
+WORKDIR /tmp/web_build
+COPY ../ .
+RUN ls
+RUN if [ -f ./package.json ]; then \
+  yarn install && \
+  yarn run web:build; fi
+
 
 FROM crowdbotics/cb-django:3.8-slim-buster AS release
 ARG SECRET_KEY
@@ -23,6 +31,9 @@ ENV PATH="/.venv/bin:$PATH"
 
 # Copy app source
 COPY --chown=django:django . .
+
+# Copy web build
+COPY --chown=django:django --from=rn_web_build /tmp/web_build/backend/web_build ./web_build
 
 # Collect static files and serve app
 RUN python3 manage.py collectstatic --no-input
