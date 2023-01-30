@@ -32,7 +32,7 @@ ENV PATH="/.venv/bin:$PATH"
 # Copy app source
 COPY --chown=django:django . .
 
-# Copy web build
+# Copy web build from  rn_web_build stage
 COPY --chown=django:django --from=rn_web_build /tmp/web_build/backend/web_build ./web_build
 
 # Collect static files and serve app
